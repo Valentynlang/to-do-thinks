@@ -1,4 +1,6 @@
 import { Todo } from '../App'
+import { useSwipeable } from 'react-swipeable'
+import { useState } from 'react'
 
 interface TodoItemProps {
   todo: Todo
@@ -7,9 +9,34 @@ interface TodoItemProps {
 }
 
 const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Reset the swipe state after animation completes
+  const handleTransitionEnd = () => {
+    if (isDeleting) {
+      onDelete(todo.id);
+    }
+  };
+
+  // Setup swipe handlers
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      setIsDeleting(true);
+    },
+    onSwipedRight: () => {
+      onToggle(todo.id);
+    },
+    trackMouse: true
+  });
+
   return (
-    <li className="py-4">
-      <div className="flex items-center justify-between">
+    <div 
+      {...swipeHandlers} 
+      className={`relative transition-transform duration-300 ${isDeleting ? 'translate-x-[-100%]' : ''}`}
+      onTransitionEnd={handleTransitionEnd}
+    >
+      {/* Main content */}
+      <div className="py-4 px-4 bg-white flex items-center justify-between">
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -17,16 +44,21 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete }) => {
             onChange={() => onToggle(todo.id)}
             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
           />
-          <span 
-            className={`ml-3 ${
-              todo.completed ? 'line-through text-gray-400' : 'text-gray-700'
-            }`}
-          >
-            {todo.text}
-          </span>
+          <div className="ml-3">
+            <span 
+              className={`${
+                todo.completed ? 'line-through text-gray-400' : 'text-gray-700'
+              }`}
+            >
+              {todo.text}
+            </span>
+            <p className="text-xs text-gray-500 mt-1">
+              {todo.category}
+            </p>
+          </div>
         </div>
         <button
-          onClick={() => onDelete(todo.id)}
+          onClick={() => setIsDeleting(true)}
           className="text-red-500 hover:text-red-700"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -34,7 +66,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete }) => {
           </svg>
         </button>
       </div>
-    </li>
+      
+
+    </div>
   )
 }
 

@@ -1,48 +1,67 @@
 # To-Do Thinks
 
-A simple todo application built with Vite, React, TypeScript, and Tailwind CSS.
+Умное приложение для управления задачами с использованием AI-сортировки, созданное с помощью Vite, React, TypeScript и Tailwind CSS.
 
-## Features
+## Функциональность
 
-- Add new tasks
-- Mark tasks as complete
-- Delete tasks
-- Responsive design
+- **AI-сортировка задач**: Просто введите задачу, и система автоматически определит категорию
+- **Организация по категориям**: Задачи автоматически группируются в соответствующие категории
+- **Удобное управление**:
+  - Свайп вправо - отметить задачу как выполненную
+  - Свайп влево - удалить задачу
+  - Перетаскивание (drag & drop) для изменения порядка задач
+- **Адаптивный дизайн**: Работает как на десктопе, так и на мобильных устройствах
 
-## Technologies Used
+## Технологии
 
 - [Vite](https://vitejs.dev/)
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
+- [React Swipeable](https://www.npmjs.com/package/react-swipeable)
 
-## Getting Started
+## Начало работы
 
-1. Clone the repository
-2. Install dependencies:
+1. Клонируйте репозиторий
+2. Установите зависимости:
    ```bash
    npm install
    ```
-3. Run the development server:
+3. Запустите сервер для разработки:
    ```bash
    npm run dev
    ```
-4. Open your browser and navigate to the provided URL (usually http://localhost:5173)
+4. Откройте браузер и перейдите по указанному URL (обычно http://localhost:5173)
 
-## Build for Production
+## Сборка для продакшена
 
 ```bash
 npm run build
 ```
 
-## Preview Production Build
+## Предварительный просмотр продакшен-сборки
 
 ```bash
 npm run preview
 ```
 
-## Project Structure
+## Структура проекта
 
-- `src/components/` - React components
-- `src/App.tsx` - Main application component
-- `index.html` - HTML entry point
+- `src/components/` - React компоненты
+  - `TodoForm.tsx` - Форма добавления задач с AI-распознаванием категорий
+  - `TodoList.tsx` - Список задач с группировкой по категориям
+  - `TodoItem.tsx` - Компонент отдельной задачи с поддержкой свайпов
+- `src/App.tsx` - Основной компонент приложения
+- `index.html` - HTML точка входа
+
+## Как использовать AI-сортировку
+
+Просто введите задачу в поле для добавления, и система автоматически определит подходящую категорию на основе текста задачи. 
+
+Примеры:
+- "Купить молоко" → категория "Покупки"
+- "Подготовить презентацию для работы" → категория "Работа"
+- "Позаниматься в тренажерном зале" → категория "Здоровье"
+- "Прочитать новую книгу" → категория "Образование"
+
+Если система не может определить категорию, задача будет добавлена в категорию "Другое".

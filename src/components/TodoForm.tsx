@@ -17,20 +17,28 @@ const TodoForm: React.FC<TodoFormProps> = ({ onAdd }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mb-6">
-      <div className="flex items-center border-b border-indigo-500 py-2">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
-          placeholder="Add a new task..."
-        />
-        <button
-          type="submit"
-          className="flex-shrink-0 bg-indigo-500 hover:bg-indigo-700 border-indigo-500 hover:border-indigo-700 text-sm border-4 text-white py-1 px-2 rounded"
-        >
-          Add
-        </button>
+      <div className="flex flex-col">
+        <h2 className="text-lg font-medium mb-2 text-gray-700">
+          Добавить новую задачу
+        </h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Просто введите свою задачу, и AI автоматически определит категорию
+        </p>
+        <div className="flex items-center bg-gray-50 rounded-lg overflow-hidden border focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="appearance-none bg-transparent border-none w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none"
+            placeholder="Например: Купить молоко или Подготовить презентацию..."
+          />
+          <button
+            type="submit"
+            className="flex-shrink-0 bg-indigo-500 hover:bg-indigo-700 text-white py-3 px-6 font-medium rounded-r"
+          >
+            Добавить
+          </button>
+        </div>
       </div>
     </form>
   )
