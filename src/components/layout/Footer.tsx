@@ -1,4 +1,4 @@
-import { FooterProps } from '../../types';
+import { FooterProps } from '../../types/components';
 
 const Footer: React.FC<FooterProps> = ({ 
   year = new Date().getFullYear(), 

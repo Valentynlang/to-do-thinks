@@ -1,6 +1,19 @@
 import { useState } from 'react'
-import { Header, Footer, TasksSection } from './components/layout'
-import { Todo, TaskClassifier, TodoToggleHandler, TodoDeleteHandler, TodoAddHandler, TodoReorderHandler, TodoCategoryChangeHandler } from './types'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Header, Footer, Navigation } from './components/layout'
+import { HomePage, AddTaskPage, ProfilePage } from './pages'
+import { 
+  Todo, 
+  TodoStatus,
+  TodoImportance,
+  TaskClassifier, 
+  TodoToggleHandler, 
+  TodoDeleteHandler, 
+  TodoCancelHandler,
+  TodoReorderHandler, 
+  TodoCategoryChangeHandler,
+  TodoImportanceChangeHandler
+} from './types/Todo'
 
 // Функция классификации задач (в будущем будет заменена на более сложную логику)
 const classifyTask: TaskClassifier = (text: string): string => {
@@ -40,20 +53,24 @@ function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [categories, setCategories] = useState<string[]>(['Работа', 'Покупки', 'Образование', 'Здоровье', 'Другое']);
 
-  const addTodo: TodoAddHandler = (text: string) => {
+  const addTodo = (text: string, category: string = '', importance: TodoImportance = TodoImportance.MEDIUM) => {
     if (text.trim() !== '') {
-      const category = classifyTask(text);
+      // Если категория не указана, определяем автоматически
+      const finalCategory = category || classifyTask(text);
       
       // Add new category if it doesn't exist already
-      if (!categories.includes(category)) {
-        setCategories([...categories, category]);
+      if (!categories.includes(finalCategory)) {
+        setCategories([...categories, finalCategory]);
       }
       
       const newTodo: Todo = {
         id: Date.now(),
         text,
         completed: false,
-        category
+        status: TodoStatus.ACTIVE,
+        category: finalCategory,
+        importance,
+        createdAt: new Date()
       }
       setTodos([...todos, newTodo]);
     }
@@ -61,14 +78,37 @@ function App() {
 
   const toggleTodo: TodoToggleHandler = (id: number) => {
     setTodos(
-      todos.map(todo => 
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    )
+      todos.map(todo => {
+        if (todo.id === id) {
+          const newStatus = todo.status === TodoStatus.COMPLETED ? TodoStatus.ACTIVE : TodoStatus.COMPLETED;
+          return { 
+            ...todo, 
+            completed: newStatus === TodoStatus.COMPLETED,
+            status: newStatus
+          };
+        }
+        return todo;
+      })
+    );
   }
 
   const deleteTodo: TodoDeleteHandler = (id: number) => {
-    setTodos(todos.filter(todo => todo.id !== id))
+    setTodos(todos.filter(todo => todo.id !== id));
+  }
+  
+  const cancelTodo: TodoCancelHandler = (id: number) => {
+    setTodos(
+      todos.map(todo => {
+        if (todo.id === id) {
+          return { 
+            ...todo, 
+            cancelled: true,
+            status: TodoStatus.CANCELLED
+          };
+        }
+        return todo;
+      })
+    );
   }
 
   // Function to reorder todos within a category
@@ -90,30 +130,62 @@ function App() {
       )
     );
   };
+  
+  // Function to change task importance
+  const changeImportance: TodoImportanceChangeHandler = (id: number, importance: TodoImportance) => {
+    setTodos(
+      todos.map(todo => 
+        todo.id === id ? { ...todo, importance } : todo
+      )
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-50 py-8 px-4">
-      <div className="max-w-lg mx-auto">
-        <Header 
-          title="To-Do Thinks" 
-          subtitle="Умный список задач с AI-сортировкой" 
-        />
-        
-
-        
-        <TasksSection
-          todos={todos}
-          categories={categories}
-          onToggle={toggleTodo}
-          onDelete={deleteTodo}
-          onReorder={reorderTodo}
-          onChangeCategory={changeTodoCategory}
-          onAdd={addTodo}
-        />
-        
-        <Footer year={2025} />
+    <Router>
+      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-50 py-8 px-4">
+        <div className="max-w-lg mx-auto">
+          <Header 
+            title="To-Do Thinks" 
+            subtitle="Умный список задач с AI-сортировкой" 
+          />
+          
+          <Navigation />
+          
+          <main className="my-6">
+            <Routes>
+              <Route path="/" element={
+                <HomePage 
+                  todos={todos}
+                  categories={categories}
+                  onToggle={toggleTodo}
+                  onDelete={deleteTodo}
+                  onCancel={cancelTodo}
+                  onReorder={reorderTodo}
+                  onChangeCategory={changeTodoCategory}
+                  onChangeImportance={changeImportance}
+                  onAdd={addTodo}
+                />
+              } />
+              <Route path="/add" element={
+                <AddTaskPage 
+                  todos={todos}
+                  categories={categories}
+                  onAdd={addTodo}
+                  suggestCategory={classifyTask}
+                />
+              } />
+              <Route path="/profile" element={
+                <ProfilePage 
+                  todos={todos}
+                />
+              } />
+            </Routes>
+          </main>
+          
+          <Footer year={2025} />
+        </div>
       </div>
-    </div>
+    </Router>
   )
 }
 

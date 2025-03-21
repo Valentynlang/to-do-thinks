@@ -1,4 +1,4 @@
-import { HeaderProps } from '../../types';
+import { HeaderProps } from '../../types/components';
 
 const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
   return (

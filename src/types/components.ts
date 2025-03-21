@@ -2,14 +2,19 @@ import {
   Todo, 
   TodoAddHandler, 
   TodoToggleHandler, 
-  TodoDeleteHandler, 
+  TodoDeleteHandler,
+  TodoCancelHandler,
   TodoReorderHandler,
-  TodoCategoryChangeHandler
+  TodoCategoryChangeHandler,
+  TodoImportanceChangeHandler,
+  TodoImportance
 } from './Todo';
 
 // Пропсы для TodoForm
 export interface TodoFormProps {
-  onAdd: TodoAddHandler;
+  onAdd: (text: string, category: string, importance: TodoImportance) => void;
+  categories: string[];
+  suggestCategory?: (text: string) => string;
 }
 
 // Пропсы для TodoList
@@ -18,8 +23,10 @@ export interface TodoListProps {
   categories: string[];
   onToggle: TodoToggleHandler;
   onDelete: TodoDeleteHandler;
+  onCancel: TodoCancelHandler;
   onReorder: TodoReorderHandler;
   onChangeCategory: TodoCategoryChangeHandler;
+  onChangeImportance: TodoImportanceChangeHandler;
 }
 
 // Пропсы для TodoItem
@@ -27,6 +34,8 @@ export interface TodoItemProps {
   todo: Todo;
   onToggle: TodoToggleHandler;
   onDelete: TodoDeleteHandler;
+  onCancel: TodoCancelHandler;
+  onChangeImportance: TodoImportanceChangeHandler;
 }
 
 // Пропсы для Header
@@ -49,4 +58,5 @@ export interface TasksSectionProps {
   onDelete: TodoDeleteHandler;
   onReorder: TodoReorderHandler;
   onChangeCategory: TodoCategoryChangeHandler;
+  onAdd: TodoAddHandler;
 } 

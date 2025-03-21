@@ -1,118 +1,131 @@
-import TodoItem from './TodoItem'
-import { useState } from 'react'
-import { TodoListProps } from '../types'
+import React, { useState } from 'react';
+import { TodoListProps } from '../types/components';
+import { TodoItem } from './TodoItem';
+import { TodoStatus } from '../types/Todo';
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided } from 'react-beautiful-dnd';
 
-const TodoList: React.FC<TodoListProps> = ({ 
+export const TodoList: React.FC<TodoListProps> = ({ 
   todos, 
-  categories,
+  categories, 
   onToggle, 
-  onDelete,
+  onDelete, 
+  onCancel,
   onReorder,
-  onChangeCategory
+  onChangeCategory,
+  onChangeImportance
 }) => {
+  // Состояние для отслеживания раскрытых категорий
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(
-    categories.reduce((acc, category) => ({ ...acc, [category]: true }), {})
+    categories.reduce((acc, category) => ({...acc, [category]: true}), {})
   );
-  
-  // Toggle category expansion
+
+  // Функция для переключения видимости категории
   const toggleCategory = (category: string) => {
-    setExpandedCategories({
-      ...expandedCategories,
-      [category]: !expandedCategories[category]
-    });
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
   };
-  
-  // Helper function to get todos for a specific category
-  const getTodosByCategory = (category: string) => {
-    return todos.filter(todo => todo.category === category);
+
+  // Получение задач по категории, исключая отмененные задачи
+  const getTodosByCategory = (categoryName: string) => {
+    return todos.filter(todo => 
+      todo.category === categoryName && 
+      todo.status !== TodoStatus.CANCELLED
+    );
   };
-  
-  // Function to handle drag start
-  const handleDragStart = (e: React.DragEvent, todoId: number, category: string, index: number) => {
-    e.dataTransfer.setData('todoId', todoId.toString());
-    e.dataTransfer.setData('sourceCategory', category);
-    e.dataTransfer.setData('sourceIndex', index.toString());
-  };
-  
-  // Function to handle drag over
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-  
-  // Function to handle drop
-  const handleDrop = (e: React.DragEvent, targetCategory: string, targetIndex: number) => {
-    e.preventDefault();
-    const todoId = parseInt(e.dataTransfer.getData('todoId'));
-    const sourceCategory = e.dataTransfer.getData('sourceCategory');
-    const sourceIndex = parseInt(e.dataTransfer.getData('sourceIndex'));
+
+  // Обработчик перетаскивания задач
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
     
-    // If dropping in the same category, reorder
-    if (sourceCategory === targetCategory) {
-      onReorder(sourceIndex, targetIndex, targetCategory);
-    } else {
-      // If dropping in a different category, change category
-      onChangeCategory(todoId, targetCategory);
+    // Если перетаскивание отменено или место назначения отсутствует
+    if (!destination) {
+      return;
+    }
+
+    // Если перетаскивание происходит в той же категории
+    if (source.droppableId === destination.droppableId) {
+      onReorder(source.index, destination.index, source.droppableId);
+    } 
+    // Если перетаскивание между разными категориями
+    else {
+      const todoId = parseInt(result.draggableId);
+      onChangeCategory(todoId, destination.droppableId);
     }
   };
 
-  if (todos.length === 0) {
+  // Фильтрация активных задач
+  const activeTodos = todos.filter(todo => todo.status !== TodoStatus.CANCELLED);
+
+  if (activeTodos.length === 0) {
     return (
-      <div className="text-gray-500 text-center py-4">
-        Задач пока нет. Добавьте что-нибудь выше!
+      <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-300 rounded-lg text-gray-500">
+        Нет активных задач. Добавьте новую задачу!
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {categories.map(category => {
-        const categoryTodos = getTodosByCategory(category);
-        if (categoryTodos.length === 0) return null;
-        
-        return (
-          <div key={category} className="border rounded-lg overflow-hidden">
-            <div 
-              className="bg-indigo-50 px-4 py-2 flex justify-between items-center cursor-pointer"
-              onClick={() => toggleCategory(category)}
-            >
-              <h3 className="font-medium text-indigo-700">{category}</h3>
-              <span className="text-indigo-700">
-                {expandedCategories[category] ? '▼' : '►'}
-              </span>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="space-y-4 mt-4">
+        {categories.map(category => {
+          const categoryTodos = getTodosByCategory(category);
+          if (categoryTodos.length === 0) return null;
+          
+          return (
+            <div key={category} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+              <div 
+                className="bg-gray-100 px-4 py-3 flex justify-between items-center cursor-pointer"
+                onClick={() => toggleCategory(category)}
+              >
+                <h3 className="font-medium text-gray-700">{category} ({categoryTodos.length})</h3>
+                <span className="text-gray-500 text-xs">
+                  {expandedCategories[category] ? '▼' : '►'}
+                </span>
+              </div>
+              
+              {expandedCategories[category] && (
+                <Droppable droppableId={category}>
+                  {(provided: DroppableProvided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="divide-y divide-gray-100"
+                    >
+                      {categoryTodos.map((todo, index) => (
+                        <Draggable 
+                          key={todo.id.toString()} 
+                          draggableId={todo.id.toString()} 
+                          index={index}
+                        >
+                          {(provided: DraggableProvided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className="cursor-move"
+                            >
+                              <TodoItem 
+                                todo={todo} 
+                                onToggle={onToggle} 
+                                onDelete={onDelete}
+                                onCancel={onCancel}
+                                onChangeImportance={onChangeImportance}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              )}
             </div>
-            
-            {expandedCategories[category] && (
-              <ul className="divide-y divide-gray-200">
-                {categoryTodos.map((todo, index) => (
-                  <li 
-                    key={todo.id}
-                    draggable={true}
-                    onDragStart={(e) => handleDragStart(e, todo.id, category, index)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, category, index)}
-                    className="cursor-move"
-                  >
-                    <TodoItem
-                      todo={todo}
-                      onToggle={onToggle}
-                      onDelete={onDelete}
-                    />
-                  </li>
-                ))}
-                <li 
-                  className="h-8 bg-gray-50 opacity-50 flex items-center justify-center text-sm text-gray-400"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, category, categoryTodos.length)}
-                >
-                  Перетащите сюда
-                </li>
-              </ul>
-            )}
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </DragDropContext>
   );
-};
-
-export default TodoList 
+}; 

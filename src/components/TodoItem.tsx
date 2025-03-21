@@ -1,69 +1,105 @@
-import { useSwipeable } from 'react-swipeable'
-import { useState } from 'react'
-import { TodoItemProps } from '../types'
+import React from 'react';
+import { TodoItemProps } from '../types/components';
+import { TodoStatus, TodoImportance } from '../types/Todo';
 
-const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // Reset the swipe state after animation completes
-  const handleTransitionEnd = () => {
-    if (isDeleting) {
-      onDelete(todo.id);
+export const TodoItem: React.FC<TodoItemProps> = ({ 
+  todo, 
+  onToggle, 
+  onDelete,
+  onCancel,
+  onChangeImportance 
+}) => {
+  const getStatusClass = () => {
+    switch (todo.status) {
+      case TodoStatus.COMPLETED:
+        return 'line-through text-gray-400 bg-gray-50';
+      case TodoStatus.CANCELLED:
+        return 'line-through text-gray-400 bg-gray-100 opacity-70';
+      default:
+        return '';
     }
   };
 
-  // Setup swipe handlers
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => {
-      setIsDeleting(true);
-    },
-    onSwipedRight: () => {
-      onToggle(todo.id);
-    },
-    trackMouse: true
-  });
+  const getImportanceClass = () => {
+    switch (todo.importance) {
+      case TodoImportance.LOW:
+        return 'border-l-4 border-emerald-500';
+      case TodoImportance.MEDIUM:
+        return 'border-l-4 border-amber-500';
+      case TodoImportance.HIGH:
+        return 'border-l-4 border-red-500';
+      default:
+        return '';
+    }
+  };
+
+  const handleImportanceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const importanceValue = e.target.value;
+    let importance: TodoImportance;
+    
+    switch(importanceValue) {
+      case 'low':
+        importance = TodoImportance.LOW;
+        break;
+      case 'medium':
+        importance = TodoImportance.MEDIUM;
+        break;
+      case 'high':
+        importance = TodoImportance.HIGH;
+        break;
+      default:
+        importance = TodoImportance.MEDIUM;
+    }
+    
+    onChangeImportance(todo.id, importance);
+  };
 
   return (
     <div 
-      {...swipeHandlers} 
-      className={`relative transition-transform duration-300 ${isDeleting ? 'translate-x-[-100%]' : ''}`}
-      onTransitionEnd={handleTransitionEnd}
+      className={`flex justify-between items-center p-3 bg-white border-b ${getStatusClass()} ${getImportanceClass()}`} 
+      data-id={todo.id}
     >
-      {/* Main content */}
-      <div className="py-4 px-4 bg-white flex items-center justify-between">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={todo.completed}
-            onChange={() => onToggle(todo.id)}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-          />
-          <div className="ml-3">
-            <span 
-              className={`${
-                todo.completed ? 'line-through text-gray-400' : 'text-gray-700'
-              }`}
-            >
-              {todo.text}
-            </span>
-            <p className="text-xs text-gray-500 mt-1">
-              {todo.category}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => setIsDeleting(true)}
-          className="text-red-500 hover:text-red-700"
+      <div className="flex items-center flex-1">
+        <input 
+          type="checkbox" 
+          checked={todo.status === TodoStatus.COMPLETED} 
+          onChange={() => onToggle(todo.id)} 
+          disabled={todo.status === TodoStatus.CANCELLED}
+          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+        />
+        <span className="ml-3 text-gray-700">{todo.text}</span>
+        <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{todo.category}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <select 
+          value={todo.importance} 
+          onChange={handleImportanceChange}
+          disabled={todo.status === TodoStatus.CANCELLED}
+          className="text-sm border border-gray-300 rounded p-1"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
+          <option value={TodoImportance.LOW}>Низкая</option>
+          <option value={TodoImportance.MEDIUM}>Средняя</option>
+          <option value={TodoImportance.HIGH}>Высокая</option>
+        </select>
+        
+        {todo.status !== TodoStatus.COMPLETED && todo.status !== TodoStatus.CANCELLED && (
+          <button 
+            className="text-gray-500 hover:bg-gray-100 p-1 rounded" 
+            onClick={() => onCancel(todo.id)}
+            title="Отменить задачу"
+          >
+            ✕
+          </button>
+        )}
+        
+        <button 
+          className="text-red-500 hover:bg-red-50 p-1 rounded" 
+          onClick={() => onDelete(todo.id)}
+          title="Удалить задачу"
+        >
+          🗑️
         </button>
       </div>
-      
-
     </div>
-  )
-}
-
-export default TodoItem 
+  );
+}; 
