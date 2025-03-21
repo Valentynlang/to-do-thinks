@@ -1,12 +1,6 @@
-import { Todo } from '../App'
 import { useSwipeable } from 'react-swipeable'
 import { useState } from 'react'
-
-interface TodoItemProps {
-  todo: Todo
-  onToggle: (id: number) => void
-  onDelete: (id: number) => void
-}
+import { TodoItemProps } from '../types'
 
 const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false);

@@ -1,8 +1,5 @@
 import { useState } from 'react'
-
-interface TodoFormProps {
-  onAdd: (text: string) => void
-}
+import { TodoFormProps } from '../types'
 
 const TodoForm: React.FC<TodoFormProps> = ({ onAdd }) => {
   const [text, setText] = useState('')

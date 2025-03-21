@@ -1,15 +1,6 @@
-import { Todo as TodoType } from '../App'
 import TodoItem from './TodoItem'
 import { useState } from 'react'
-
-interface TodoListProps {
-  todos: TodoType[]
-  categories: string[]
-  onToggle: (id: number) => void
-  onDelete: (id: number) => void
-  onReorder: (sourceIndex: number, destinationIndex: number, categoryName: string) => void
-  onChangeCategory: (id: number, newCategory: string) => void
-}
+import { TodoListProps } from '../types'
 
 const TodoList: React.FC<TodoListProps> = ({ 
   todos, 
