@@ -3,7 +3,7 @@ import { Todo, TodoStatus, TodoImportance } from '../types/Todo';
 import { TodoList } from '../components/TodoList';
 import { TodoForm } from '../components/TodoForm';
 
-interface HomePageProps {
+interface TasksListProps {
   todos: Todo[];
   categories: string[];
   onToggle: (id: number) => void;
@@ -13,9 +13,10 @@ interface HomePageProps {
   onChangeCategory: (id: number, newCategory: string) => void;
   onChangeImportance: (id: number, importance: TodoImportance) => void;
   onAdd: (text: string, category: string, importance: TodoImportance) => void;
+  onAddCategory?: (newCategory: string) => boolean;
 }
 
-const HomePage: React.FC<HomePageProps> = ({
+const TasksList: React.FC<TasksListProps> = ({
   todos,
   categories,
   onToggle,
@@ -24,7 +25,8 @@ const HomePage: React.FC<HomePageProps> = ({
   onReorder,
   onChangeCategory,
   onChangeImportance,
-  onAdd
+  onAdd,
+  onAddCategory
 }) => {
   // Счетчики для статистики
   const completedCount = todos.filter(t => t.status === TodoStatus.COMPLETED).length;
@@ -32,23 +34,24 @@ const HomePage: React.FC<HomePageProps> = ({
   const cancelledCount = todos.filter(t => t.status === TodoStatus.CANCELLED).length;
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <section>
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">Быстрое добавление</h2>
+        <h2 className="heading-md">Новая задача</h2>
         <TodoForm 
           onAdd={onAdd} 
           categories={categories} 
+          onAddCategory={onAddCategory}
         />
       </section>
       
-      <section>
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">Все задачи</h2>
+      <section className="pt-4">
+        <h2 className="heading-lg">Текущие задачи</h2>
         
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-700">Ваши задачи</h3>
-              <div className="text-sm text-gray-500">
+        <div className="card">
+          <div className="card-content">
+            <div className="card-header">
+              <h3 className="heading-md mb-0">Все задачи</h3>
+              <div className="text-secondary">
                 Всего: {todos.length} | Выполнено: {completedCount}
               </div>
             </div>
@@ -62,31 +65,32 @@ const HomePage: React.FC<HomePageProps> = ({
               onReorder={onReorder}
               onChangeCategory={onChangeCategory}
               onChangeImportance={onChangeImportance}
+              onAddCategory={onAddCategory}
             />
           </div>
         </div>
       </section>
       
-      <section>
-        <h3 className="text-lg font-medium text-gray-700 mb-2">Быстрая статистика</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-green-50 rounded-lg p-4 border border-green-100 flex flex-col items-center">
-            <div className="text-3xl font-bold text-green-600">
+      <section className="pt-2">
+        <h3 className="heading-md">Общая статистика</h3>
+        <div className="responsive-grid">
+          <div className="card p-5 flex flex-col items-center">
+            <div className="text-3xl font-normal text-green-600 mb-1">
               {completedCount}
             </div>
-            <div className="text-sm text-green-600">Выполненные задачи</div>
+            <div className="text-secondary">Выполненные задачи</div>
           </div>
-          <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-100 flex flex-col items-center">
-            <div className="text-3xl font-bold text-yellow-600">
+          <div className="card p-5 flex flex-col items-center">
+            <div className="text-3xl font-normal text-gray-600 mb-1">
               {activeCount}
             </div>
-            <div className="text-sm text-yellow-600">Активные задачи</div>
+            <div className="text-secondary">Активные задачи</div>
           </div>
-          <div className="bg-red-50 rounded-lg p-4 border border-red-100 flex flex-col items-center">
-            <div className="text-3xl font-bold text-red-600">
+          <div className="card p-5 flex flex-col items-center">
+            <div className="text-3xl font-normal text-gray-500 mb-1">
               {cancelledCount}
             </div>
-            <div className="text-sm text-red-600">Отмененные задачи</div>
+            <div className="text-secondary">Отмененные задачи</div>
           </div>
         </div>
       </section>
@@ -94,4 +98,4 @@ const HomePage: React.FC<HomePageProps> = ({
   );
 };
 
-export default HomePage; 
+export default TasksList; 

@@ -15,6 +15,7 @@ export interface TodoFormProps {
   onAdd: (text: string, category: string, importance: TodoImportance) => void;
   categories: string[];
   suggestCategory?: (text: string) => string;
+  onAddCategory?: (newCategory: string) => boolean;
 }
 
 // Пропсы для TodoList
@@ -27,6 +28,7 @@ export interface TodoListProps {
   onReorder: TodoReorderHandler;
   onChangeCategory: TodoCategoryChangeHandler;
   onChangeImportance: TodoImportanceChangeHandler;
+  onAddCategory?: (newCategory: string) => boolean;
 }
 
 // Пропсы для TodoItem
@@ -59,4 +61,5 @@ export interface TasksSectionProps {
   onReorder: TodoReorderHandler;
   onChangeCategory: TodoCategoryChangeHandler;
   onAdd: TodoAddHandler;
+  onAddCategory?: (newCategory: string) => boolean;
 } 

@@ -1,13 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TodoFormProps } from '../types/components';
 import { TodoImportance } from '../types/Todo';
 
-export const TodoForm: React.FC<TodoFormProps> = ({ onAdd, categories, suggestCategory }) => {
+export const TodoForm: React.FC<TodoFormProps> = ({ onAdd, categories, suggestCategory, onAddCategory }) => {
   const [text, setText] = useState('');
   const [category, setCategory] = useState('');
   const [importance, setImportance] = useState<TodoImportance>(TodoImportance.MEDIUM);
   const [showCategorySelect, setShowCategorySelect] = useState(false);
+  const [showImportanceSelect, setShowImportanceSelect] = useState(false);
   const [suggestedCategory, setSuggestedCategory] = useState<string | null>(null);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const importanceRef = useRef<HTMLDivElement>(null);
+
+  // Закрыть выпадающие меню при клике вне них
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setShowCategorySelect(false);
+      }
+      if (importanceRef.current && !importanceRef.current.contains(event.target as Node)) {
+        setShowImportanceSelect(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (text.trim() && suggestCategory) {
@@ -30,88 +51,217 @@ export const TodoForm: React.FC<TodoFormProps> = ({ onAdd, categories, suggestCa
       
       // Сбрасываем форму
       setText('');
-      setCategory('');
+      // Оставляем выбранную категорию для удобства добавления нескольких задач одной категории
+      // setCategory('');
       setImportance(TodoImportance.MEDIUM);
-      setShowCategorySelect(false);
+      // Не закрываем меню после добавления
+      // setShowCategorySelect(false);
+      setShowImportanceSelect(false);
     }
   };
 
+  // Получить текстовое представление важности
+  const getImportanceText = (imp: TodoImportance) => {
+    switch (imp) {
+      case TodoImportance.LOW:
+        return 'Низкая';
+      case TodoImportance.MEDIUM:
+        return 'Средняя';
+      case TodoImportance.HIGH:
+        return 'Высокая';
+      default:
+        return 'Средняя';
+    }
+  };
+
+  // Получить цвет для каждого уровня важности
+  const getImportanceColor = (imp: TodoImportance) => {
+    switch (imp) {
+      case TodoImportance.LOW:
+        return 'bg-blue-600 border-blue-600';
+      case TodoImportance.MEDIUM:
+        return 'bg-yellow-600 border-yellow-600';
+      case TodoImportance.HIGH:
+        return 'bg-red-600 border-red-600';
+      default:
+        return 'bg-yellow-600 border-yellow-600';
+    }
+  };
+
+  // Обработчик добавления новой категории
+  const handleAddNewCategory = () => {
+    const trimmedName = newCategoryName.trim();
+    if (trimmedName !== '' && !categories.includes(trimmedName)) {
+      // Проверка на пустую строку и дубликаты
+      
+        // Вызываем функцию для добавления новой категории из родительского компонента
+        if (onAddCategory && onAddCategory(trimmedName)) {
+          // Если категория успешно добавлена, устанавливаем её как выбранную
+          setCategory(trimmedName);
+          
+          // Сбрасываем состояние
+          setNewCategoryName('');
+          setShowNewCategoryInput(false);
+        }
+      
+    }
+  };
+
+  const handleSelectCategory = (cat: string) => {
+    setCategory(cat);
+    // Не закрываем меню после выбора
+    // setShowCategorySelect(false);
+  };
+
   return (
-    <form className="bg-white p-4 rounded-lg shadow-sm mb-6" onSubmit={handleSubmit}>
-      <div className="flex items-center gap-2">
+    <form className="bg-white rounded-lg mb-6" onSubmit={handleSubmit}>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Что нужно сделать?"
-          className="flex-1 py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="input flex-1"
           autoFocus
         />
 
-        <button 
-          type="button" 
-          className="py-2 px-4 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 whitespace-nowrap"
-          onClick={() => setShowCategorySelect(!showCategorySelect)}
-        >
-          {category || suggestedCategory || 'Категория'} ▼
-        </button>
-
-        <select
-          value={importance}
-          onChange={(e) => setImportance(e.target.value as TodoImportance)}
-          className="py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value={TodoImportance.LOW}>Низкая</option>
-          <option value={TodoImportance.MEDIUM}>Средняя</option>
-          <option value={TodoImportance.HIGH}>Высокая</option>
-        </select>
-
-        <button 
-          type="submit" 
-          className="py-2 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          Добавить
-        </button>
+        <div className="flex flex-row gap-2">
+          <button 
+            type="submit" 
+            className="btn-primary flex-1 sm:flex-none"
+          >
+            Добавить
+          </button>
+        </div>
       </div>
 
-      {showCategorySelect && (
-        <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200 flex flex-wrap gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              className={`px-3 py-1 text-sm rounded-md border ${
-                category === cat 
-                  ? 'bg-indigo-600 text-white border-indigo-600' 
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-              }`}
-              onClick={() => {
-                setCategory(cat);
-                setShowCategorySelect(false);
-              }}
-            >
-              {cat}
-            </button>
-          ))}
-          <button
-            type="button"
-            className="px-3 py-1 text-sm rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+      <div className="flex flex-col sm:flex-row gap-2 mt-3">
+        <div ref={categoryRef} className="relative flex-1">
+          <button 
+            type="button" 
+            className="btn-secondary whitespace-nowrap w-full"
             onClick={() => {
-              setCategory('');
+              setShowCategorySelect(!showCategorySelect);
+              setShowImportanceSelect(false);
+            }}
+          >
+            {category || suggestedCategory || 'Выберите категорию'} {showCategorySelect ? '▲' : '▼'}
+          </button>
+          
+          {showCategorySelect && (
+            <div className="absolute top-full left-0 right-0 mt-1 p-4 bg-gray-50 rounded-lg border border-gray-100 flex flex-col gap-2 z-10 max-h-72 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    className={`px-3 py-2 text-sm text-left rounded border ${
+                      category === cat 
+                        ? 'bg-green-600 text-white border-green-600' 
+                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                    }`}
+                    onClick={() => handleSelectCategory(cat)}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              
+              {!showNewCategoryInput ? (
+                <div className="flex justify-between mt-2">
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-sm rounded bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
+                    onClick={() => {
+                      setCategory('');
+                    }}
+                  >
+                    Сбросить
+                  </button>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-sm rounded bg-white text-green-600 border border-green-200 hover:bg-green-50"
+                    onClick={() => setShowNewCategoryInput(true)}
+                  >
+                    + Новая категория
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Название категории"
+                    className="input flex-1 text-sm py-1.5"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-sm rounded bg-green-600 text-white hover:bg-green-700"
+                    onClick={handleAddNewCategory}
+                  >
+                    Добавить
+                  </button>
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-sm rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    onClick={() => {
+                      setNewCategoryName('');
+                      setShowNewCategoryInput(false);
+                    }}
+                  >
+                    Отмена
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div ref={importanceRef} className="relative flex-1">
+          <button 
+            type="button" 
+            className="btn-secondary whitespace-nowrap w-full"
+            onClick={() => {
+              setShowImportanceSelect(!showImportanceSelect);
               setShowCategorySelect(false);
             }}
           >
-            Сбросить
+            {getImportanceText(importance)} {showImportanceSelect ? '▲' : '▼'}
           </button>
+          
+          {showImportanceSelect && (
+            <div className="absolute top-full left-0 right-0 mt-1 p-4 bg-gray-50 rounded-lg border border-gray-100 flex flex-col gap-2 z-10">
+              {Object.values(TodoImportance).map((imp) => (
+                <button
+                  key={imp}
+                  type="button"
+                  className={`px-3 py-2 text-sm text-left rounded border ${
+                    importance === imp 
+                      ? `${getImportanceColor(imp)} text-white` 
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                  }`}
+                  onClick={() => {
+                    setImportance(imp);
+                    // Не закрываем меню
+                    // setShowImportanceSelect(false);
+                  }}
+                >
+                  {getImportanceText(imp)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {suggestedCategory && !category && !showCategorySelect && (
-        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md flex justify-between items-center text-sm text-blue-800">
+        <div className="mt-3 p-4 bg-gray-50 border border-gray-100 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-gray-600">
           <span>Предлагаемая категория: <strong>{suggestedCategory}</strong></span>
           <button 
             type="button" 
-            className="ml-2 px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
+            className="mt-2 sm:mt-0 px-3 py-1.5 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
             onClick={() => setCategory(suggestedCategory)}
           >
             Принять

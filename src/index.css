@@ -1,3 +1,105 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Контейнеры и карточки */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden;
+  }
+  
+  .card-content {
+    @apply p-6;
+  }
+  
+  .card-header {
+    @apply flex items-center justify-between mb-6;
+  }
+  
+  /* Заголовки и тексты */
+  .heading-lg {
+    @apply text-xl font-medium text-gray-700 mb-6;
+  }
+  
+  .heading-md {
+    @apply text-lg font-medium text-gray-600 mb-4;
+  }
+  
+  .text-secondary {
+    @apply text-sm text-gray-500;
+  }
+  
+  /* Кнопки */
+  .btn {
+    @apply py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-1;
+  }
+  
+  .btn-primary {
+    @apply btn bg-green-600 text-white font-normal hover:bg-green-700 focus:ring-green-500;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100;
+  }
+  
+  .btn-icon {
+    @apply p-1.5 rounded-full transition-colors;
+  }
+  
+  /* Формы */
+  .input {
+    @apply py-2.5 px-4 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300;
+  }
+  
+  .select {
+    @apply py-2.5 px-3 border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300;
+  }
+  
+  /* Теги и бейджи */
+  .tag {
+    @apply text-xs px-2.5 py-1 rounded-full bg-gray-50;
+  }
+  
+  /* Категории задач */
+  .category-header {
+    @apply bg-gray-50 px-5 py-3.5 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors;
+  }
+  
+  /* Адаптивная верстка */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-3 gap-4;
+  }
+  
+  /* Навигация в стиле мобильного приложения */
+  .mobile-nav-link {
+    @apply flex flex-col items-center py-2 px-3 rounded-lg transition-all duration-200 ease-in-out;
+  }
+  
+  .mobile-nav-link-active {
+    @apply text-green-600 font-medium;
+  }
+  
+  .mobile-nav-link-active .mobile-nav-icon {
+    @apply transform scale-110 text-green-600;
+  }
+  
+  .mobile-nav-link-inactive {
+    @apply text-gray-500 hover:text-gray-700;
+  }
+  
+  .mobile-nav-link-inactive:active {
+    @apply transform scale-95;
+  }
+  
+  /* Добавляем стили для активной навигационной иконки */
+  .mobile-nav-icon {
+    @apply text-xl mb-1 transition-transform duration-200;
+  }
+}
+
+/* Обеспечиваем корректное отображение на мобильных устройствах с разными высотами экрана */
+@media (max-height: 700px) {
+  .min-h-screen {
+    min-height: calc(100vh + 80px);
+  }
+}

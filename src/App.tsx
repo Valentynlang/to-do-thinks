@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Header, Footer, Navigation } from './components/layout'
-import { HomePage, AddTaskPage, ProfilePage } from './pages'
+import { Header, Navigation } from './components/layout'
+import { TasksList, AddTaskPage, ProfilePage } from './pages'
 import { 
   Todo, 
   TodoStatus,
@@ -53,14 +53,23 @@ function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [categories, setCategories] = useState<string[]>(['Работа', 'Покупки', 'Образование', 'Здоровье', 'Другое']);
 
+  // Функция для добавления новой категории
+  const addCategory = (newCategory: string) => {
+    if (newCategory.trim() !== '' && !categories.includes(newCategory.trim())) {
+      setCategories([...categories, newCategory.trim()]);
+      return true;
+    }
+    return false;
+  };
+
   const addTodo = (text: string, category: string = '', importance: TodoImportance = TodoImportance.MEDIUM) => {
     if (text.trim() !== '') {
       // Если категория не указана, определяем автоматически
       const finalCategory = category || classifyTask(text);
       
-      // Add new category if it doesn't exist already
+      // Добавляем новую категорию, используя существующую функцию addCategory
       if (!categories.includes(finalCategory)) {
-        setCategories([...categories, finalCategory]);
+        addCategory(finalCategory);
       }
       
       const newTodo: Todo = {
@@ -142,19 +151,21 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-indigo-50 py-8 px-4">
-        <div className="max-w-lg mx-auto">
+      <div className="min-h-screen bg-gray-50 py-6 sm:py-10 px-2 sm:px-4 pb-20">
+        <div className="max-w-lg sm:max-w-2xl mx-auto">
           <Header 
-            title="To-Do Thinks" 
-            subtitle="Умный список задач с AI-сортировкой" 
+            title="Только подумай" 
           />
           
-          <Navigation />
-          
-          <main className="my-6">
+          <main className="my-6 sm:my-8">
             <Routes>
               <Route path="/" element={
-                <HomePage 
+                <ProfilePage 
+                  todos={todos}
+                />
+              } />
+              <Route path="/tasks" element={
+                <TasksList 
                   todos={todos}
                   categories={categories}
                   onToggle={toggleTodo}
@@ -164,6 +175,7 @@ function App() {
                   onChangeCategory={changeTodoCategory}
                   onChangeImportance={changeImportance}
                   onAdd={addTodo}
+                  onAddCategory={addCategory}
                 />
               } />
               <Route path="/add" element={
@@ -171,19 +183,15 @@ function App() {
                   todos={todos}
                   categories={categories}
                   onAdd={addTodo}
+                  onAddCategory={addCategory}
                   suggestCategory={classifyTask}
-                />
-              } />
-              <Route path="/profile" element={
-                <ProfilePage 
-                  todos={todos}
                 />
               } />
             </Routes>
           </main>
-          
-          <Footer year={2025} />
         </div>
+        
+        <Navigation />
       </div>
     </Router>
   )

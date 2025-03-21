@@ -1,52 +1,59 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { FaHome, FaPlus, FaUser } from 'react-icons/fa';
 
 const Navigation: React.FC = () => {
   return (
-    <nav className="bg-indigo-600 py-3 px-4 mb-6 rounded-lg shadow-md">
-      <ul className="flex space-x-4 justify-center">
-        <li>
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-md py-2 px-4 z-10">
+      <ul className="max-w-lg sm:max-w-2xl mx-auto flex justify-around items-center">
+        <li className="relative">
           <NavLink 
             to="/" 
             className={({ isActive }) => 
-              `px-4 py-2 rounded-md transition-colors ${
-                isActive 
-                  ? 'bg-white text-indigo-700 font-medium' 
-                  : 'text-white hover:bg-indigo-500'
-              }`
+              `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
             }
             end
           >
-            Главная
+              <>
+                <FaUser className="mobile-nav-icon" />
+                <span className="text-xs hidden sm:block">Профиль</span>
+              </>
+            
           </NavLink>
         </li>
-        <li>
+        <li className="relative">
           <NavLink 
             to="/add" 
             className={({ isActive }) => 
-              `px-4 py-2 rounded-md transition-colors ${
-                isActive 
-                  ? 'bg-white text-indigo-700 font-medium' 
-                  : 'text-white hover:bg-indigo-500'
-              }`
+              `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
             }
           >
-            Добавить задачу
+
+
+                  <>
+                    <FaPlus className={`mobile-nav-icon`} />
+                    <span className="text-xs hidden sm:block">Добавить</span>
+                  </>
+
+            
           </NavLink>
         </li>
-        <li>
+        <li className="relative">
           <NavLink 
-            to="/profile" 
+            to="/tasks" 
             className={({ isActive }) => 
-              `px-4 py-2 rounded-md transition-colors ${
-                isActive 
-                  ? 'bg-white text-indigo-700 font-medium' 
-                  : 'text-white hover:bg-indigo-500'
-              }`
+              `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
             }
           >
-            Профиль
+
+              <>
+                <FaHome className="mobile-nav-icon" />
+                <span className="text-xs hidden sm:block">Задачи</span>
+              </>
+            
           </NavLink>
         </li>
+
       </ul>
     </nav>
   );
